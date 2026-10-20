@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#171e2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AIPFA">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<title>AIPFA</title>
+<link rel="stylesheet" href="/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- AUTH -->
+<section id="auth" class="auth hidden">
+  <div class="auth-card">
+    <h1>AIPFA</h1>
+    <p class="muted">Your AI personal finance assistant</p>
+    <div id="auth-msg" class="msg hidden"></div>
+
+    <form id="form-login">
+      <h2>Log in</h2>
+      <label>Username or login ID<input id="l-id" required autocomplete="username" placeholder="username or FA123456"></label>
+      <label>Password<input id="l-pw" type="password" required autocomplete="current-password"></label>
+      <button class="btn">Log in</button>
+      <p class="links"><a href="#" data-show="form-forgot">Forgot password?</a> · <a href="#" data-show="form-signup">Create account</a></p>
+    </form>
+
+    <form id="form-login-pin" class="hidden" autocomplete="off">
+      <h2>Verify sign-in</h2>
+      <p id="login-step-message" class="muted small"></p>
+      <label>Six-digit security PIN<input id="l-pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code"></label>
+      <button class="btn">Continue</button>
+      <p class="links"><a href="#" id="cancel-login-step">Cancel and return to log in</a></p>
+    </form>
+
+    <form id="form-signup" class="hidden">
+      <h2>Create account</h2>
+      <label>First name<input id="s-first" required maxlength="50" autocomplete="given-name"></label>
+      <label>Last name<input id="s-last" required maxlength="50" autocomplete="family-name"></label>
+      <label>Email<input id="s-email" type="email" required autocomplete="email"></label>
+      <label>Password<input id="s-pw" type="password" required minlength="12" maxlength="72" autocomplete="new-password" placeholder="12+ characters, letter and number"></label>
+      <button class="btn">Sign up</button>
+      <p class="muted small">We will create a username and login ID, then email you a confirmation link.</p>
+      <p class="links"><a href="#" data-show="form-login">Back to log in</a></p>
+    </form>
+
+    <form id="form-forgot" class="hidden">
+      <h2>Forgot password</h2>
+      <label>Account or recovery email<input id="f-email" type="email" required autocomplete="email"></label>
+      <button class="btn">Send new password</button>
+      <p class="muted small">Your login ID and a new temporary password will be emailed. Your data stays safe.</p>
+      <p class="links"><a href="#" data-show="form-login">Back to log in</a></p>
+    </form>
+  </div>
+</section>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <header>
+    <div class="brand">AIPFA</div>
+    <nav id="tabs">
+      <button data-tab="dashboard" class="active">Dashboard</button>
+      <button data-tab="transactions">Transactions</button>
+      <button data-tab="budget">Budget</button>
+      <button data-tab="assistant">AI Assistant</button>
+      <button data-tab="account">Account</button>
+    </nav>
+    <button id="notification-toggle" class="btn ghost small notification-toggle" type="button" aria-label="Notifications" aria-expanded="false" title="Notifications">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg>
+      <span id="notification-count" class="notification-count hidden">0</span>
+    </button>
+    <button id="install-app" class="btn ghost small" type="button">Install app</button>
+    <button id="logout" class="btn ghost">Log out</button>
+  </header>
+
+  <main>
+    <div id="toast" class="toast hidden"></div>
+
+    <!-- Dashboard -->
+    <section id="tab-dashboard" class="tab">
+      <div class="row between">
+        <h2>Overview</h2>
+        <div class="row dashboard-tools">
+          <button id="dashboard-ai-open" type="button" class="btn ghost small dashboard-ai-open" aria-label="Open AI finance assistant" title="Open AI finance assistant">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4.2a3.2 3.2 0 0 0-5.7-1.3 3.5 3.5 0 0 0-3.1 5.3 3.8 3.8 0 0 0 .6 5.7 3.5 3.5 0 0 0 3.2 5 3.4 3.4 0 0 0 5-1V4.2Zm0 0a3.2 3.2 0 0 1 5.7-1.3 3.5 3.5 0 0 1 3.1 5.3 3.8 3.8 0 0 1-.6 5.7 3.5 3.5 0 0 1-3.2 5 3.4 3.4 0 0 1-5-1V4.2Z"/><path d="M12 4v16M7.2 7.2h2.3v3H12m-5 3h2.5v2.5H12m4.8-8.5h-2.3v3H12m5 3h-2.5v2.5H12"/><circle cx="7.2" cy="7.2" r=".8"/><circle cx="7" cy="13" r=".8"/><circle cx="16.8" cy="7.2" r=".8"/><circle cx="17" cy="13" r=".8"/><path d="m19.8 2.2.35 1.05 1.05.35-1.05.35-.35 1.05-.35-1.05-1.05-.35 1.05-.35.35-1.05Z"/></svg>
+          </button>
+          <input type="month" id="month" aria-label="Accounting month">
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card"><span>Monthly budget</span><b id="k-budget">$0</b></div>
+        <div class="card"><span>Income</span><b id="k-income">$0</b></div>
+        <div class="card"><span>Spent</span><b id="k-spent">$0</b></div>
+        <div class="card"><span>Available balance</span><b id="k-left">$0</b></div>
+        <div class="card"><span>Savings</span><b id="k-savings">$0</b></div>
+      </div>
+      <div class="progress"><div id="bar"></div></div>
+      <p id="bar-text" class="muted small"></p>
+      <section id="notification-center" class="panel notification-center hidden" aria-label="Notifications">
+        <div class="row between"><h3>Notifications</h3><button id="notification-close" type="button" class="btn ghost small">Close</button></div>
+        <p id="notification-empty" class="muted small">You’re all caught up.</p>
+        <ul id="notification-list" class="notification-list"></ul>
+      </section>
+
+      <div class="grid2">
+        <div class="panel"><h3>Where did I spend?</h3><div class="chart-box"><canvas id="pie"></canvas></div></div>
+        <div class="panel"><h3>Daily spending</h3><div class="chart-box"><canvas id="line"></canvas></div></div>
+      </div>
+      <div class="grid2">
+        <div class="panel"><h3>Spending by category</h3><table id="cat-table"></table></div>
+        <div class="panel"><h3>Summary &amp; advice</h3><ul id="insights" class="insights"></ul></div>
+        <div class="panel"><h3>Month-over-month</h3><div class="chart-box comparison-chart-box"><canvas id="month-comparison-chart"></canvas></div><p id="month-comparison" class="muted small"></p></div>
+      </div>
+    </section>
+
+    <!-- Transactions -->
+    <section id="tab-transactions" class="tab hidden">
+      <div class="panel">
+        <h3>Add transaction</h3>
+        <form id="form-tx" class="inline">
+          <select id="t-type"><option value="expense">Expense</option><option value="income">Income</option></select>
+          <input id="t-amount" type="number" step="0.01" min="0.01" placeholder="Amount ($)" required>
+          <select id="t-cat"></select>
+          <input id="t-note" maxlength="200" placeholder="Note (e.g. lunch at cafe)">
+          <input id="t-date" type="date" required>
+          <button class="btn">Add</button>
+        </form>
+      </div>
+      <div class="panel">
+        <h3>Scan a bill or receipt</h3>
+        <p class="muted small">AI reads the image and suggests transaction details. Review them in the form above before saving. The image is sent to your configured AI provider.</p>
+        <div class="inline">
+          <input id="bill-image" type="file" accept="image/jpeg,image/png,image/webp">
+          <button id="bill-scan" type="button" class="btn ghost">Analyze bill</button>
+        </div>
+        <p id="bill-result" class="muted small" aria-live="polite"></p>
+      </div>
+      <div id="tx-advice-panel" class="panel hidden"><h3>Summary &amp; advice for this transaction</h3><ul id="tx-advice" class="insights"></ul></div>
+      <div class="panel">
+        <div class="row between"><h3 id="tx-history-title">History</h3><input type="month" id="tx-month" aria-label="History month"></div>
+        <div class="scroll"><table id="tx-table"></table></div>
+      </div>
+    </section>
+
+    <!-- Budget -->
+    <section id="tab-budget" class="tab hidden">
+      <div class="panel narrow">
+        <h3>Monthly budget</h3>
+        <form id="form-budget" class="inline">
+          <input id="b-total" type="number" step="0.01" min="0" required placeholder="Monthly budget ($)">
+          <input id="b-daily" type="number" step="0.01" min="0" required placeholder="Daily budget ($)">
+          <button id="budget-suggest" type="button" class="btn ghost">Suggest from income</button>
+          <button class="btn">Save budget</button>
+        </form>
+        <div id="budget-info" class="muted"></div>
+      </div>
+    </section>
+
+    <!-- AI -->
+    <section id="tab-assistant" class="tab hidden">
+      <div class="panel chat">
+        <div class="row between"><h3>Chat with your finance assistant</h3><button id="chat-clear" class="btn ghost small">Clear chat</button></div>
+        <div id="chat-log" class="chat-log"></div>
+        <form id="form-chat" class="inline">
+          <input id="chat-input" maxlength="1000" autocomplete="off" placeholder="Ask about your finances, or attach a file…">
+          <input id="chat-file" class="hidden" type="file" accept="image/jpeg,image/png,image/webp,image/gif,application/pdf,.docx,.xlsx,.pptx,.txt,.md,.csv">
+          <button id="chat-attach" class="assistant-icon-btn" type="button" title="Attach an image or document (up to 5 MB)" aria-label="Attach an image or document"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 12.5 6.8-6.8a4 4 0 0 1 5.7 5.7l-8.7 8.7a6 6 0 0 1-8.5-8.5l8.5-8.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <span id="chat-file-name" class="muted small chat-attachment-name hidden" aria-live="polite"></span>
+          <button id="chat-file-remove" class="btn ghost small hidden" type="button" aria-label="Remove attachment">×</button>
+          <button class="btn">Send</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Account -->
+    <section id="tab-account" class="tab hidden">
+      <div class="panel narrow">
+        <h3>Your account</h3>
+        <div class="profile-block"><img id="profile-picture" class="profile-picture hidden" alt="Profile picture"><div><b id="a-name"></b><p class="muted small profile-username"><b id="a-username"></b></p></div></div>
+        <p>Email: <b id="a-email"></b></p>
+        <p>Daily login ID: <b id="a-id"></b></p>
+        <h3>Profile picture</h3>
+        <form id="form-profile" class="profile-form"><label>Optional image (PNG, JPEG, or WebP, up to 1 MB)<input id="profile-file" type="file" accept="image/png,image/jpeg,image/webp"></label><div class="profile-actions"><button class="btn" type="submit">Save picture</button><button id="remove-profile-picture" class="btn ghost" type="button">Remove picture</button></div></form>
+        <h3>Theme</h3>
+        <label>Appearance<select id="theme-choice"><option value="system">Use device setting</option><option value="dark">Dark</option><option value="light">Light</option></select></label>
+        <h3>Recovery email</h3>
+        <p class="muted small">Verify a backup address. You can later promote it to your sign-in email; the old email will be removed and all devices signed out.</p>
+        <p>Verified recovery email: <b id="a-recovery-email">Not set</b></p>
+        <form id="form-recovery-email" autocomplete="off"><label>New recovery email<input id="recovery-email" type="email" required autocomplete="email"></label><label>Account password<input id="recovery-password" type="password" required autocomplete="current-password"></label><button class="btn">Send verification link</button></form>
+        <form id="form-promote-recovery" class="hidden" autocomplete="off"><label>Account password<input id="promote-password" type="password" required autocomplete="current-password"></label><button class="btn ghost">Change sign-in email to recovery email</button></form>
+        <h3>Optional login PIN</h3>
+        <p id="pin-status" class="muted small">A six-digit PIN is stored as a one-way hash and required after your password at each login.</p>
+        <form id="form-pin" autocomplete="off"><label>Six-digit PIN<input id="account-pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="new-password"></label><label>Account password<input id="pin-password" type="password" required autocomplete="current-password"></label><div class="inline"><button id="enable-pin" class="btn" type="submit">Enable PIN</button><button id="disable-pin" class="btn ghost" type="button">Turn off PIN</button></div></form>
+        <h3>Privacy permissions</h3>
+        <label class="inline"><input id="ai-data-sharing" type="checkbox"> I consent to the AI provider processing my finance data and bill images</label>
+        <p class="muted small">AI chat may send finance context and attached images or documents, and bill scanning sends the selected image, to the provider configured by this app. Enabling this is explicit consent. Turn it off to keep using your local dashboard and reports without AI chat or bill scanning.</p>
+        <h3>Notifications</h3>
+        <p class="muted small">Control AIPFA budget warning sounds and device notifications. Browser permission is required for device alerts.</p>
+        <div class="inline">
+          <button id="toggle-budget-notifications" type="button" class="btn ghost">Turn off alerts</button>
+          <button id="enable-budget-notifications" type="button" class="btn ghost">Allow device notifications</button>
+          <span id="budget-notification-status" class="muted small" role="status" aria-live="polite"></span>
+        </div>
+        <h3>Change password</h3>
+        <form id="form-pw" autocomplete="off">
+          <label>Current password<input id="p-cur" type="password" required autocomplete="new-password"></label>
+          <label>New password<input id="p-new" type="password" required minlength="12" maxlength="72" autocomplete="new-password" placeholder="12+ characters, letter and number"></label>
+          <button class="btn">Change password</button>
+        </form>
+        <hr>
+        <h3>Delete account</h3><p class="muted small">Permanently deletes your account, transactions, budgets, and chat history.</p>
+        <form id="form-delete-account" autocomplete="off"><label>Confirm with your password<input id="delete-password" type="password" required autocomplete="new-password"></label><button class="btn danger-btn">Delete account</button></form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="welcome-screen" class="welcome-screen hidden" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
+  <div class="panel welcome-card"><h1 id="welcome-title">Welcome to AIPFA</h1><p id="welcome-name" class="muted"></p><button id="welcome-continue" class="btn">Continue to AIPFA</button></div>
+</div>
+
+<script src="/app.js"></script>
+<script src="/assistantextras.js?v=13"></script>
+<script src="/pwa.js"></script>
+</body>
+</html>

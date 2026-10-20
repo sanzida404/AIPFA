@@ -1,0 +1,6 @@
+# Python 3.10–3.12, CPU inference. The first spoken reply downloads the selected MMS model.
+torch>=2.2,<3
+transformers>=4.44,<5
+numpy>=1.26
+uroman>=1.3.1
+num2words>=0.5.14

@@ -1,0 +1,7 @@
+node_modules/
+.npm-cache/
+backups/
+.env
+*.db
+*.db-shm
+*.db-wal

@@ -1,0 +1,15 @@
+node_modules
+.npm-cache
+.env
+.git
+*.db
+*.db-shm
+*.db-wal
+backups
+docs
+submission
+tests
+testmail.js
+testunosend.js
+__pycache__
+*.py[cod]
