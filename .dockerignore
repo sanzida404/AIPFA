@@ -6,10 +6,8 @@ node_modules
 *.db-shm
 *.db-wal
 backups
-docs
-submission
 tests
 testmail.js
-testunosend.js
+TEST-CASES.md
 __pycache__
 *.py[cod]

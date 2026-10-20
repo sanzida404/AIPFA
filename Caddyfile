@@ -1,4 +1,0 @@
-{$AIPFA_DOMAIN} {
-  encode zstd gzip
-  reverse_proxy aipfa:3000
-}
