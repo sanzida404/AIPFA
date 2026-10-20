@@ -36,10 +36,17 @@ const KEYWORDS = {
 // Keep using the existing database so upgrades preserve accounts and transactions.
 const DB_FILE = process.env.DB_PATH || path.join(__dirname, 'finassist.db');
 if (process.platform !== 'win32') process.umask(0o077);
-const db = new Database(DB_FILE);
-console.log('[DB] Using database file:', DB_FILE);
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+const useTurso = !!process.env.TURSO_DATABASE_URL;
+if (useTurso && !process.env.TURSO_AUTH_TOKEN) throw new Error('TURSO_AUTH_TOKEN is required when TURSO_DATABASE_URL is set.');
+if (process.env.RENDER && !useTurso) throw new Error('Render requires TURSO_DATABASE_URL and TURSO_AUTH_TOKEN so user data is stored outside its ephemeral filesystem.');
+const db = useTurso
+  ? new (require('./turso-sync-db'))(process.env.TURSO_DATABASE_URL, process.env.TURSO_AUTH_TOKEN)
+  : new Database(DB_FILE);
+console.log(useTurso ? '[DB] Using Turso database.' : '[DB] Using database file: ' + DB_FILE);
+if (!useTurso) {
+  db.pragma('journal_mode = WAL');
+  db.pragma('foreign_keys = ON');
+}
 if (process.platform !== 'win32') {
   for (const file of [DB_FILE, `${DB_FILE}-wal`, `${DB_FILE}-shm`]) {
     try { if (fs.existsSync(file)) fs.chmodSync(file, 0o600); }
@@ -200,7 +207,21 @@ async function smtpSend(msg) {
 const BREVO_KEY = process.env.BREVO_API_KEY;
 const UNOSEND_KEY = process.env.UNOSEND_API_KEY;
 const UNOSEND_URL = process.env.UNOSEND_API_URL || 'https://api.unosend.co/v1/emails';
+const RESEND_KEY = process.env.RESEND_API_KEY;
 async function sendMail(to, subject, html, text) {
+  if (RESEND_KEY) {
+    const from = (process.env.RESEND_FROM || '').trim();
+    if (!from) throw new Error('RESEND_FROM is required when RESEND_API_KEY is set.');
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to: [to], subject, html, text }),
+      signal: AbortSignal.timeout(20000),
+    });
+    if (!r.ok) throw new Error(`Resend ${r.status}`);
+    console.log('[EMAIL SENT via Resend]');
+    return;
+  }
   if (UNOSEND_KEY) {
     // HTTPS email API (port 443). The sending domain must be verified in the Unosend dashboard.
     const from = (process.env.UNOSEND_FROM || '').trim();
@@ -245,7 +266,9 @@ async function sendMail(to, subject, html, text) {
 }
 
 // Check the email settings at startup so problems are visible immediately
-if (UNOSEND_KEY) {
+if (RESEND_KEY) {
+  console.log('[EMAIL] Using Resend API.' + (process.env.RESEND_FROM ? '' : ' WARNING: RESEND_FROM is missing!'));
+} else if (UNOSEND_KEY) {
   console.log('[EMAIL] Using Unosend API.' + (process.env.UNOSEND_FROM ? '' : ' WARNING: UNOSEND_FROM is missing!'));
 } else if (BREVO_KEY) {
   console.log('[EMAIL] Using Brevo API for email.' + (process.env.BREVO_SENDER_EMAIL ? '' : ' WARNING: BREVO_SENDER_EMAIL is missing!'));
@@ -1083,7 +1106,7 @@ app.delete('/api/account', auth, authLimiter, async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.pass_hash))) return res.status(403).json({ error: 'Wrong password.' }); // 403, so the page does not treat it as "session expired"
     db.transaction((id) => {
       auditSecurityEvent(id, 'account_deleted');
-      for (const t of ['sessions', 'chat', 'transactions', 'budgets', 'verification_tokens']) db.prepare(`DELETE FROM ${t} WHERE user_id=?`).run(id);
+      for (const t of ['sessions', 'trusted_devices', 'login_challenges', 'account_email_tokens', 'chat', 'transactions', 'budgets', 'verification_tokens']) db.prepare(`DELETE FROM ${t} WHERE user_id=?`).run(id);
       db.prepare('DELETE FROM users WHERE id=?').run(id);
     })(user.id);
     lastReset.delete(user.id);

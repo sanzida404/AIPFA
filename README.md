@@ -17,8 +17,8 @@ Run the isolated HTTP smoke suite with `npm test`. It creates synthetic accounts
 ## .env settings
 - `OPENROUTER_API_KEY`: from https://openrouter.ai/keys
 - `OPENROUTER_MODEL`: any OpenRouter model id (default `openai/gpt-4o-mini`; free models end in `:free`)
-- `SMTP_*`: for real emails. With Gmail, turn on 2-step verification and create an App Password.
-  Email delivery is required for signup confirmation, account recovery, and password reset. Configure SMTP, Brevo, or Unosend. Without an email provider, those messages fail; they are not printed to the terminal.
+- `RESEND_API_KEY` and `RESEND_FROM`: send account emails through the Resend HTTPS API. Verify the sender domain in Resend first. SMTP (`SMTP_*`) remains an optional fallback for deployments that allow SMTP.
+  Email delivery is required for signup confirmation, account recovery, and password reset. Configure Resend, SMTP, Brevo, or Unosend. Without an email provider, those messages fail; they are not printed to the terminal.
 - `BASE_URL`: your public URL when deployed (used in the confirmation link)
 - `BILL_ANALYSIS_MODEL`: optional OpenRouter vision model for bill scans (defaults to `OPENROUTER_MODEL`, then `openrouter/free`)
 
@@ -51,6 +51,8 @@ Before release, run `npm audit --omit=dev`, update vulnerable packages, and revi
 AI chat and bill scanning send finance context or the selected image to the configured OpenRouter model only after the user explicitly enables consent in the Account tab. Existing accounts must confirm this once after upgrading. Disabling consent blocks AI chat and bill scanning but local ledger, dashboard, and report exports remain available. Scan results are suggestions and require review before saving. Do not upload sensitive documents unless you accept the configured AI provider's data handling terms.
 
 ## Deploy to Azure
+
+For the prepared Render + Turso setup, see [docs/RENDER-TURSO.md](docs/RENDER-TURSO.md). It covers the one-time SQLite import and the required Render environment variables.
 
 For the supported Azure path with the current SQLite database, use a single Azure Linux VM with a persistent managed disk, Docker Compose, and Caddy for HTTPS. Follow [Azure deployment instructions](docs/AZURE-DEPLOYMENT.md) before creating resources. Azure App Service's shared `/home` storage and Azure Files mounts are network storage; SQLite WAL is not supported on network filesystems, so the current database should not be placed there.
 

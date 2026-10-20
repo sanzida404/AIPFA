@@ -52,7 +52,7 @@ OPENROUTER_MODEL=openai/gpt-4o-mini
 BILL_ANALYSIS_MODEL=openai/gpt-4o-mini
 ```
 
-Also configure **one** email delivery option. SMTP uses `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and optional `MAIL_FROM`; Brevo uses `BREVO_API_KEY` plus `BREVO_SENDER_EMAIL`; Unosend uses `UNOSEND_API_KEY` plus an appropriate verified `UNOSEND_FROM`. Signup confirmation, password reset, and account recovery do not work without a functioning provider. Never commit `.env` or paste credentials into the frontend.
+Also configure **one** email delivery option. Resend uses `RESEND_API_KEY` plus a verified `RESEND_FROM`; Brevo uses `BREVO_API_KEY` plus `BREVO_SENDER_EMAIL`; Unosend uses `UNOSEND_API_KEY` plus an appropriate verified `UNOSEND_FROM`; SMTP uses `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and optional `MAIL_FROM`. Signup confirmation, password reset, and account recovery do not work without a functioning provider. Never commit `.env` or paste credentials into the frontend.
 
 `TRUST_PROXY=1` matches the single Caddy reverse proxy in the included Compose setup. If you add another proxy/CDN in front, review the full forwarding chain and trust only the actual proxy hops.
 
