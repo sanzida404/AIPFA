@@ -4,6 +4,8 @@ AIPFA is a personal finance web app for recording income, spending, and savings;
 
 **GitHub repository:** [sanzida404/AIPFA](https://github.com/sanzida404/AIPFA)
 
+**Live website:** [https://aipfa.me](https://aipfa.me)
+
 ## Features
 
 ### Accounts and account security
